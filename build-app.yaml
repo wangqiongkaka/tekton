@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: build-app
+spec:
+  inputs:
+    resources:
+      - name: ebay-image-similarity
+        type: git
+    params:
+      - name: pathToDockerFile
+        description: The path to the dockerfile to build
+        default: /workspace/ebay-image-similarity/deploy/Dockerfile
+      - name: pathToContext
+        description: The build context used by Kaniko
+        default: /workspace/ebay-image-similarity
+      - name: pathToYaml
+        description: /workspace/ebay-image-similarity/deploy/deploy.yml
+  outputs:
+    resources:
+      - name: builtImage
+        type: image
+  steps:
+    - name: tar
+      image: java:8
+      workingDir: /workspace/ebay-image-similarity
+      command:
+        - tar
+      args:
+        - -cvf
+        - ebay-image-similarity.tar
+        - ./
+    - name: build-docker-image
+      image: registry.cn-beijing.aliyuncs.com/acs-sample/jenkins-slave-kaniko:0.6.0
+      command:
+        - kaniko
+      args:
+        - --dockerfile=${inputs.params.pathToDockerFile}
+        - --destination=${outputs.resources.builtImage.url}
+        - --context=${inputs.params.pathToContext}
+    - name: deploy-app
+      image: registry.cn-beijing.aliyuncs.com/acs-sample/jenkins-slave-kubectl:1.11.5
+      command:
+        - kubectl
+      args:
+        - apply
+        - -f
+        - ${inputs.params.pathToYaml}

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tekton-basic-user-pass-registry
+  annotations:
+    tekton.dev/docker-0: https://harbor-bigdata.banggood.cn
+type: kubernetes.io/basic-auth
+stringData:
+  username: bgadmin
+  password: 1qaz@WSX

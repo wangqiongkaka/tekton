@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tekton-basic-user-pass-git
+  annotations:
+    tekton.dev/git-0: http://192.168.15.72:82 
+type: kubernetes.io/basic-auth
+stringData:
+  username: root
+  password: 1qaz@WSX

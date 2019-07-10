@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  name: build-app-task-run
+spec:
+  serviceAccount: tekton-git-and-registry
+  taskRef:
+    name: build-app
+  trigger:
+    type: manual
+  inputs:
+    resources:
+      - name: ebay-image-similarity
+        resourceRef:
+          name: git-pipeline-resource
+    params:
+      - name: pathToDockerFile
+        value: /workspace/ebay-image-similarity/deploy/Dockerfile
+      - name: pathToContext
+        value: /workspace/ebay-image-similarity
+      - name: pathToYaml
+        value: /workspace/ebay-image-similarity/deploy/deploy.yml
+  outputs:
+    resources:
+      - name: builtImage
+        resourceRef:
+          name: registry-pipeline-resource

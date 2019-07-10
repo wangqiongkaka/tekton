@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: git-pipeline-resource
+spec:
+  type: git
+  params:
+    - name: revision
+      value: master
+    - name: url
+      value: http://192.168.15.72:82/python/ebay-image-similarity.git
