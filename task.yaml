@@ -46,18 +46,18 @@ spec:
     script: |
       #!/usr/bin/env bash
       sed -i "s/program_name/$(params.application)/g" deploy/Dockerfile
-      sed -i "s/program_name/$(params.application)/g" deploy/deploy.yml
-      sed -i "s/docker_tag/$(params.dockerTag)/g" deploy/deploy.yml
-      sed -i "s/replicaset/$(params.replicaset)/g" deploy/deploy.yml
-      sed -i "s/requestscpu/$(params.requestsCpu)/g" deploy/deploy.yml
-      sed -i "s/limitscpu/$(params.limitsCpu)/g" deploy/deploy.yml
-      sed -i "s/requestsmemory/$(params.requestsMemory)/g" deploy/deploy.yml
-      sed -i "s/limitsmemory/$(params.limitsMemory)/g" deploy/deploy.yml
-      sed -i "s/env_config/$(params.envConfig)/g" deploy/deploy.yml
-      sed -i "s/JAVA_SPRING_PROFILE/$(params.javaSpringProfile)/g" deploy/deploy.yml
-      sed -i "s/mq_enviroment/$(params.mqEnviroment)/g" deploy/deploy.yml
-      sed -i "s/name_space/$(params.application)/g" deploy/deploy.yml
-      sed -i "s#apollo_service#$(params.apolloService)#g" deploy/deploy.yml
+      sed -i "s/program_name/$(params.application)/g" deploy/deploy.yaml
+      sed -i "s/docker_tag/$(params.dockerTag)/g" deploy/deploy.yaml
+      sed -i "s/replicaset/$(params.replicaset)/g" deploy/deploy.yaml
+      sed -i "s/requestscpu/$(params.requestsCpu)/g" deploy/deploy.yaml
+      sed -i "s/limitscpu/$(params.limitsCpu)/g" deploy/deploy.yaml
+      sed -i "s/requestsmemory/$(params.requestsMemory)/g" deploy/deploy.yaml
+      sed -i "s/limitsmemory/$(params.limitsMemory)/g" deploy/deploy.yaml
+      sed -i "s/env_config/$(params.envConfig)/g" deploy/deploy.yaml
+      sed -i "s/JAVA_SPRING_PROFILE/$(params.javaSpringProfile)/g" deploy/deploy.yaml
+      sed -i "s/mq_enviroment/$(params.mqEnviroment)/g" deploy/deploy.yaml
+      sed -i "s/name_space/$(params.application)/g" deploy/deploy.yaml
+      sed -i "s#apollo_service#$(params.apolloService)#g" deploy/deploy.yaml
   - name: maven-build
     image: core.harbor.domain/test/maven:3.6-jdk-8
     workingDir: $(params.pathToContext)
