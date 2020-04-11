@@ -260,7 +260,7 @@ metadata:
 #  http:
 #    - match:
 #        - authority:
-#            exact: program_name-v1.yaochufa.com
+#            exact: program_name-v1.test.com
 #            uri:
 #            prefix: /
 #      route:
@@ -269,7 +269,7 @@ metadata:
 #            subset: v1
 #    - match:
 #        - authority:
-#            exact: program_name-v2.yaochufa.com
+#            exact: program_name-v2.test.com
 #          uri:
 #            prefix: /
 #      route:
