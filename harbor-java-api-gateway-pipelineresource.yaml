@@ -1,9 +1,9 @@
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
 metadata:
-  name: registry-pipeline-resource
+  name: harbor-java-api-gateway
 spec:
   type: image
   params:
     - name: url
-      value: harbor-bigdata.banggood.cn/bigdata/ebay-image-similarity
+      value: core.harbor.domain/test/java-api-gateway
