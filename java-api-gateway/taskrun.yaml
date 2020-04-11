@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
-  generateName: java-api-gateway-online-
+  generateName: java-api-gateway-
 spec:
   serviceAccountName: tekton-gitlab-and-harbor
   taskRef:
@@ -25,7 +25,7 @@ spec:
   - name: application
     value: java-api-gateway
   - name: dockerTag
-    value: 2.0.0
+    value: latest
   - name: replicaset
     value: "2"
   - name: requestsCpu

@@ -1,0 +1,9 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: harbor-java-test
+spec:
+  type: image
+  params:
+    - name: url
+      value: core.harbor.domain/test/java-test

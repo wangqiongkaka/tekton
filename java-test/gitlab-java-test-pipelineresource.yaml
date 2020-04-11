@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: gitlab-java-test
+spec:
+  type: git
+  params:
+    - name: revision
+      value: master
+    - name: url
+      value: http://gitlab.domain/root/java-test.git

@@ -1,0 +1,291 @@
+---
+# deploy 配置文件
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: program_name-v1
+  namespace: name_space-env_config
+spec:
+  replicas: replicaset
+  selector: 
+    matchLabels: 
+      app: program_name
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: program_name
+        version: v1
+    spec:
+      initContainers:
+      - name: apm-agent
+        image: core.harbor.domain/test/apm-agent:1.13.0
+        command: ["/bin/sh"]
+        args: ["-c", "cp elastic-apm-agent-1.13.0.jar /apm-agent"]
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: apm-agent
+          mountPath: /apm-agent
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - {key: node.application.java/type, operator: In, values: ["java"]}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - {key: app, operator: In, values: ["program_name"]}
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: program_name
+          image: core.harbor.domain/test/program_name:docker_tag
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: APOLLO_CONFIGSERVICE
+              value: apollo_service
+            - name: TZ
+              value: Asia/Shanghai
+            - name: JAVA_SPRING_MQ_ENV
+              value: mq_enviroment
+            - name: APM_AGENT
+              value: "-javaagent:/apm-agent/elastic-apm-agent-1.13.0.jar -Delastic.apm.service_name=program_name-env_config -Delastic.apm.server_url=http://apm-server.apm-server"
+            - name: JAVA_OPTS
+              value: "-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:-UseAdaptiveSizePolicy -XX:ActiveProcessorCount=limitscpu -XX:MinRAMPercentage=20.0 -XX:MaxRAMPercentage=60.0 -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCDetails -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -Xloggc:/data/htdocs/program_name/logs/gc.log"
+          command: ["/bin/sh"]
+#          args: ["-c", "java $JAVA_OPTS $APM_AGENT -jar -Dspring.profiles.active=JAVA_SPRING_PROFILE program_name-runtime.jar"]
+          args: ["-c", "java -version && sleep 600"]
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/bash", "-c", "PID=`pidof java` && kill -SIGTERM $PID && while ps -p $PID > /dev/null; do sleep 1; done;"]
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/info
+              port: 9108
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 60
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/info
+              port: 9108
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 60
+          ports:
+            - containerPort: 9108
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: limitscpu
+              memory: limitsmemory
+            requests:
+              cpu: requestscpu
+              memory: requestsmemory
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {}
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            runAsUser: 0
+          workingDir: /data/htdocs/program_name
+          volumeMounts:
+            - name: apm-agent
+              mountPath: /apm-agent
+            - name: logdata
+              mountPath: /data/htdocs/program_name/logs
+        - name: filebeat
+          image: core.harbor.domain/test/filebeat:7.1.1
+          args: [
+            "-c", "/opt/filebeat/filebeat.yml",
+            "-e",
+          ]
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: pod_name
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+          securityContext:
+            runAsUser: 0
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 10m
+              memory: 10Mi
+          volumeMounts:
+            - name: filebeat-config
+              mountPath: /opt/filebeat/
+            - name: logdata
+              mountPath: /java/logs
+      volumes:
+        - name: apm-agent
+          emptyDir: {}
+        - name: logdata
+          emptyDir: {}
+        - name: filebeat-config
+          configMap:
+            name: program_name-filebeat-config
+            items:
+              - key: filebeat.yml
+                path: filebeat.yml
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: harbor
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      
+      
+---
+# service 配置文件
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: program_name
+  namespace: name_space-env_config
+  labels:
+    app: program_name
+spec:
+  selector:
+    app: program_name
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9108
+      
+      
+---
+# filebeat configmap 配置文件
+---
+
+
+apiVersion: v1
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: log
+      multiline.pattern: '^\['
+      multiline.negate: true
+      multiline.match: after
+      paths:
+        - "/java/logs/*"
+      tail_files: true
+      fields:
+        pod_name: '${pod_name}'
+        POD_IP: '${POD_IP}'
+        type: 'env_config-program_name'
+    output.elasticsearch:
+      hosts: ["es.es.svc.cluster.local"]
+      codec.format:
+        string: '%{[@timestamp]} %{[message]} pod_name %{[fields][pod_name]} %{[fields][POD_IP]}'
+    logging.to_files: true
+kind: ConfigMap
+metadata:
+  name: program_name-filebeat-config
+  namespace: name_space-env_config
+
+
+---
+# istio配置文件
+---
+
+
+#kind: DestinationRule
+#apiVersion: networking.istio.io/v1alpha3
+#metadata:
+#  name: program_name
+#  namespace: name_space-env_config
+#spec:
+#  host: program_name.name_space-env_config.svc.cluster.local
+#  trafficPolicy:
+#    connectionPool:
+#      http:
+#        http1MaxPendingRequests: 1024
+#        http2MaxRequests: 1024
+#        maxRequestsPerConnection: 1024
+#        maxRetries: 1024
+#      tcp:
+#        connectTimeout: 60s
+#        maxConnections: 1024
+#    loadBalancer:
+#      simple: LEAST_CONN
+#  subsets:
+#    - labels:
+#        version: v1
+#      name: v1
+#    - labels:
+#        version: v2
+#      name: v2
+---
+#kind: VirtualService
+#apiVersion: networking.istio.io/v1alpha3
+#metadata:
+#  name: program_name
+#  namespace: name_space-env_config
+#spec:
+#  hosts:
+#    - program_name.test.com
+#    - program_name.name_space-env_config.svc.cluster.local
+#  gateways:
+#    - kube-system/test-gateway
+#    - mesh
+#  http:
+#    - match:
+#        - authority:
+#            exact: program_name-v1.yaochufa.com
+#            uri:
+#            prefix: /
+#      route:
+#        - destination:
+#            host: program_name.program_name.svc.cluster.local
+#            subset: v1
+#    - match:
+#        - authority:
+#            exact: program_name-v2.yaochufa.com
+#          uri:
+#            prefix: /
+#      route:
+#        - destination:
+#            host: program_name.program_name.svc.cluster.local
+#            subset: v2
+#    - retries:
+#        attempts: 3
+#        perTryTimeout: 60s
+#      route:
+#        - destination:
+#            host: program_name.name_space-env_config.svc.cluster.local
+#            subset: v1
+#          weight: 100
+#      timeout: 60s
+#        - destination:
+#            host: program_name.name_space-env_config.svc.cluster.local
+#            subset: v2
+#          weight: 0

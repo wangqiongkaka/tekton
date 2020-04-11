@@ -1,0 +1,42 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: java-test-
+spec:
+  serviceAccountName: tekton-gitlab-and-harbor
+  taskRef:
+    name: build-java-app
+  resources:
+    inputs:
+    - name: repo-source
+      resourceRef:
+        name: gitlab-java-test
+    outputs:
+    - name: builtImage
+      resourceRef:
+        name: harbor-java-test
+  params:
+  - name: pathToDockerFile
+    value: /workspace/repo-source/deploy/Dockerfile
+  - name: pathToContext
+    value: /workspace/repo-source/
+  - name: pathToYaml
+    value: /workspace/repo-source/deploy/deploy.yml
+  - name: application
+    value: java-test
+  - name: dockerTag
+    value: latest
+  - name: replicaset
+    value: "2"
+  - name: requestsCpu
+    value: 100m
+  - name: limitsCpu
+    value: 500m
+  - name: requestsMemory
+    value: 500Mi
+  - name: limitsMemory
+    value: 1536Mi
+  - name: envConfig
+    value: online
+  - name: javaSpringProfile
+    value: prod
