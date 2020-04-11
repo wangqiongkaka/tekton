@@ -1,0 +1,96 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-java-app
+spec:
+  params:
+    - name: pathToDockerFile
+      default: /workspace/repo-source/deploy/Dockerfile
+    - name: pathToContext
+      default: /workspace/repo-source
+    - name: pathToYaml
+      default: /workspace/repo-source/deploy/deploy.yml
+    - name: application
+      default: java
+    - name: dockerTag
+      default: latest
+    - name: replicaset
+      default: "2"
+    - name: requestsCpu
+      default: 100m
+    - name: limitsCpu
+      default: 500m
+    - name: requestsMemory
+      default: 500Mi
+    - name: limitsMemory
+      default: 1536Mi
+    - name: envConfig
+      default: online
+    - name: javaSpringProfile
+      default: prod
+    - name: mqEnviroment
+      default: mq
+    - name: apolloService
+      default: apollo.test.com
+  resources:
+    inputs:
+    - name: repo-source
+      type: git
+    outputs:
+    - name: builtImage
+      type: image
+  steps:
+  - name: run-shell
+    image: ubuntu
+    workingDir: $(params.pathToContext)
+    script: |
+      #!/usr/bin/env bash
+      sed -i "s/program_name/$(params.application)/g" deploy/Dockerfile
+      sed -i "s/program_name/$(params.application)/g" deploy/deploy.yml
+      sed -i "s/docker_tag/$(params.dockerTag)/g" deploy/deploy.yml
+      sed -i "s/replicaset/$(params.replicaset)/g" deploy/deploy.yml
+      sed -i "s/requestscpu/$(params.requestsCpu)/g" deploy/deploy.yml
+      sed -i "s/limitscpu/$(params.limitsCpu)/g" deploy/deploy.yml
+      sed -i "s/requestsmemory/$(params.requestsMemory)/g" deploy/deploy.yml
+      sed -i "s/limitsmemory/$(params.limitsMemory)/g" deploy/deploy.yml
+      sed -i "s/env_config/$(params.envConfig)/g" deploy/deploy.yml
+      sed -i "s/JAVA_SPRING_PROFILE/$(params.javaSpringProfile)/g" deploy/deploy.yml
+      sed -i "s/mq_enviroment/$(params.mqEnviroment)/g" deploy/deploy.yml
+      sed -i "s/name_space/$(params.application)/g" deploy/deploy.yml
+      sed -i "s#apollo_service#$(params.apolloService)#g" deploy/deploy.yml
+  - name: maven-build
+    image: core.harbor.domain/test/maven:3.6-jdk-8
+    workingDir: $(params.pathToContext)
+    command:
+    - mvn
+    args:
+    - clean
+    - package
+    - install
+    - -P=$(params.javaSpringProfile)
+    - -Dmaven.test.skip=true
+  - name: build-docker-image
+    image: gcr.io/kaniko-project/executor
+    env:
+    - name: "DOCKER_CONFIG"
+      value: "/tekton/home/.docker/"
+    command:
+    - /kaniko/executor
+    args:
+    - --insecure
+    - --insecure-pull
+    - --insecure-registry=core.harbor.domain
+    - --skip-tls-verify
+    - --skip-tls-verify-pull
+    - --skip-tls-verify-registry=core.harbor.domain
+    - --dockerfile=$(params.pathToDockerFile)
+    - --destination=$(resources.outputs.builtImage.url):$(params.dockerTag)
+    - --context=$(params.pathToContext)
+  - name: deploy-app
+    image: lachlanevenson/k8s-kubectl
+    command:
+    - kubectl
+    args:
+    - apply
+    - -f
+    - $(params.pathToYaml)

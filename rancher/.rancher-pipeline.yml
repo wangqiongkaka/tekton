@@ -1,0 +1,96 @@
+stages:
+- name: run shell && build
+  steps:
+  - runScriptConfig:
+      image: core.harbor.domain/test/maven:3.6-jdk-8
+      shellScript: |-
+        mvn clean package -Dmaven.test.skip=true
+        sed -i "s/program_name/${program_name}/g" deploy/Dockerfile
+        sed -i "s/program_name/${program_name}/g" deploy/deploy.yml
+        sed -i "s/docker_tag/${docker_tag}/g" deploy/deploy.yml
+        sed -i "s/replicaset/${replicaset}/g" deploy/deploy.yml
+        sed -i "s/requestscpu/${requestscpu}/g" deploy/deploy.yml
+        sed -i "s/limitscpu/${limitscpu}/g" deploy/deploy.yml
+        sed -i "s/requestsmemory/${requestsmemory}/g" deploy/deploy.yml
+        sed -i "s/limitsmemory/${limitsmemory}/g" deploy/deploy.yml
+        sed -i "s/env_config/${env_config}/g" deploy/deploy.yml
+        sed -i "s/JAVA_SPRING_PROFILE/${JAVA_SPRING_PROFILE}/g" deploy/deploy.yml
+        sed -i "s/mq_enviroment/${mq_enviroment}/g" deploy/deploy.yml
+        sed -i "s/name_space/${name_space}/g" deploy/deploy.yml
+        sed -i "s#apollo_service#${apollo_service}#g" deploy/deploy.yml
+    env:
+      JAVA_SPRING_PROFILE: release
+      apollo_service: http://apollo-meta.test.com
+      docker_tag: ${CICD_GIT_COMMIT}
+      env_config: online
+      limitscpu: "2"
+      limitsmemory: 1536Mi
+      name_space: ${CICD_GIT_REPO_NAME}
+      program_name: ${CICD_GIT_REPO_NAME}
+      replicaset: "2"
+      requestscpu: 10m
+      requestsmemory: 1536Mi
+    when:
+      branch:
+        include:
+        - master
+      event: {}
+  - runScriptConfig:
+      image: core.harbor.domain/test/maven:3.6-jdk-8
+      shellScript: |-
+        mvn clean package -Dmaven.test.skip=true
+        sed -i "s/program_name/${program_name}/g" deploy/Dockerfile
+        sed -i "s/program_name/${program_name}/g" deploy/deploy.yml
+        sed -i "s/docker_tag/${docker_tag}/g" deploy/deploy.yml
+        sed -i "s/replicaset/${replicaset}/g" deploy/deploy.yml
+        sed -i "s/requestscpu/${requestscpu}/g" deploy/deploy.yml
+        sed -i "s/limitscpu/${limitscpu}/g" deploy/deploy.yml
+        sed -i "s/requestsmemory/${requestsmemory}/g" deploy/deploy.yml
+        sed -i "s/limitsmemory/${limitsmemory}/g" deploy/deploy.yml
+        sed -i "s/env_config/${env_config}/g" deploy/deploy.yml
+        sed -i "s/JAVA_SPRING_PROFILE/${JAVA_SPRING_PROFILE}/g" deploy/deploy.yml
+        sed -i "s/mq_enviroment/${mq_enviroment}/g" deploy/deploy.yml
+        sed -i "s/name_space/${name_space}/g" deploy/deploy.yml
+        sed -i "s#apollo_service#${apollo_service}#g" deploy/deploy.yml
+    env:
+      JAVA_SPRING_PROFILE: pre
+      apollo_service: http://apollo-meta.test.com
+      docker_tag: ${CICD_GIT_COMMIT}
+      env_config: pre
+      limitscpu: "1"
+      limitsmemory: 2Gi
+      mq_enviroment: yufabu
+      name_space: ${CICD_GIT_REPO_NAME}
+      program_name: ${CICD_GIT_REPO_NAME}
+      replicaset: "1"
+      requestscpu: 10m
+      requestsmemory: 128Mi
+    when:
+      branch:
+        include:
+        - pre
+  when:
+    event: {}
+- name: build-image
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./deploy/Dockerfile
+      buildContext: .
+      tag: test/${CICD_GIT_REPO_NAME}:${CICD_GIT_COMMIT}
+      pushRemote: true
+      registry: core.harbor.domain
+    env:
+      PLUGIN_INSECURE: "true"
+    when:
+      event: {}
+  when:
+    event: {}
+- name: deploy
+  steps:
+  - applyYamlConfig:
+      path: ./deploy/deploy.yml
+    when:
+      branch: {}
+timeout: 60
+branch: {}
+notification: {}
