@@ -4,8 +4,8 @@ metadata:
   name: tekton-cluster-admin
 subjects:
   - kind: ServiceAccount
-    name: tekton-git-and-registry
-    namespace: tekton-pipelines
+    name: tekton-gitlab-and-harbor
+    namespace: default
 roleRef:
   kind: ClusterRole
   name: cluster-admin
