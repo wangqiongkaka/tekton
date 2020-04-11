@@ -1,6 +1,6 @@
 #安装tekton  
 kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml  
-#应用  
+#示例应用  
 java-api-gateway、java-test  
 #代码仓库  
 gitlab.domain  
