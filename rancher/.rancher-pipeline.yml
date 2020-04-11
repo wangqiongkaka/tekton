@@ -6,18 +6,18 @@ stages:
       shellScript: |-
         mvn clean package -Dmaven.test.skip=true
         sed -i "s/program_name/${program_name}/g" deploy/Dockerfile
-        sed -i "s/program_name/${program_name}/g" deploy/deploy.yml
-        sed -i "s/docker_tag/${docker_tag}/g" deploy/deploy.yml
-        sed -i "s/replicaset/${replicaset}/g" deploy/deploy.yml
-        sed -i "s/requestscpu/${requestscpu}/g" deploy/deploy.yml
-        sed -i "s/limitscpu/${limitscpu}/g" deploy/deploy.yml
-        sed -i "s/requestsmemory/${requestsmemory}/g" deploy/deploy.yml
-        sed -i "s/limitsmemory/${limitsmemory}/g" deploy/deploy.yml
-        sed -i "s/env_config/${env_config}/g" deploy/deploy.yml
-        sed -i "s/JAVA_SPRING_PROFILE/${JAVA_SPRING_PROFILE}/g" deploy/deploy.yml
-        sed -i "s/mq_enviroment/${mq_enviroment}/g" deploy/deploy.yml
-        sed -i "s/name_space/${name_space}/g" deploy/deploy.yml
-        sed -i "s#apollo_service#${apollo_service}#g" deploy/deploy.yml
+        sed -i "s/program_name/${program_name}/g" deploy/deploy.yaml
+        sed -i "s/docker_tag/${docker_tag}/g" deploy/deploy.yaml
+        sed -i "s/replicaset/${replicaset}/g" deploy/deploy.yaml
+        sed -i "s/requestscpu/${requestscpu}/g" deploy/deploy.yaml
+        sed -i "s/limitscpu/${limitscpu}/g" deploy/deploy.yaml
+        sed -i "s/requestsmemory/${requestsmemory}/g" deploy/deploy.yaml
+        sed -i "s/limitsmemory/${limitsmemory}/g" deploy/deploy.yaml
+        sed -i "s/env_config/${env_config}/g" deploy/deploy.yaml
+        sed -i "s/JAVA_SPRING_PROFILE/${JAVA_SPRING_PROFILE}/g" deploy/deploy.yaml
+        sed -i "s/mq_enviroment/${mq_enviroment}/g" deploy/deploy.yaml
+        sed -i "s/name_space/${name_space}/g" deploy/deploy.yaml
+        sed -i "s#apollo_service#${apollo_service}#g" deploy/deploy.yaml
     env:
       JAVA_SPRING_PROFILE: release
       apollo_service: http://apollo-meta.test.com
@@ -40,18 +40,18 @@ stages:
       shellScript: |-
         mvn clean package -Dmaven.test.skip=true
         sed -i "s/program_name/${program_name}/g" deploy/Dockerfile
-        sed -i "s/program_name/${program_name}/g" deploy/deploy.yml
-        sed -i "s/docker_tag/${docker_tag}/g" deploy/deploy.yml
-        sed -i "s/replicaset/${replicaset}/g" deploy/deploy.yml
-        sed -i "s/requestscpu/${requestscpu}/g" deploy/deploy.yml
-        sed -i "s/limitscpu/${limitscpu}/g" deploy/deploy.yml
-        sed -i "s/requestsmemory/${requestsmemory}/g" deploy/deploy.yml
-        sed -i "s/limitsmemory/${limitsmemory}/g" deploy/deploy.yml
-        sed -i "s/env_config/${env_config}/g" deploy/deploy.yml
-        sed -i "s/JAVA_SPRING_PROFILE/${JAVA_SPRING_PROFILE}/g" deploy/deploy.yml
-        sed -i "s/mq_enviroment/${mq_enviroment}/g" deploy/deploy.yml
-        sed -i "s/name_space/${name_space}/g" deploy/deploy.yml
-        sed -i "s#apollo_service#${apollo_service}#g" deploy/deploy.yml
+        sed -i "s/program_name/${program_name}/g" deploy/deploy.yaml
+        sed -i "s/docker_tag/${docker_tag}/g" deploy/deploy.yaml
+        sed -i "s/replicaset/${replicaset}/g" deploy/deploy.yaml
+        sed -i "s/requestscpu/${requestscpu}/g" deploy/deploy.yaml
+        sed -i "s/limitscpu/${limitscpu}/g" deploy/deploy.yaml
+        sed -i "s/requestsmemory/${requestsmemory}/g" deploy/deploy.yaml
+        sed -i "s/limitsmemory/${limitsmemory}/g" deploy/deploy.yaml
+        sed -i "s/env_config/${env_config}/g" deploy/deploy.yaml
+        sed -i "s/JAVA_SPRING_PROFILE/${JAVA_SPRING_PROFILE}/g" deploy/deploy.yaml
+        sed -i "s/mq_enviroment/${mq_enviroment}/g" deploy/deploy.yaml
+        sed -i "s/name_space/${name_space}/g" deploy/deploy.yaml
+        sed -i "s#apollo_service#${apollo_service}#g" deploy/deploy.yaml
     env:
       JAVA_SPRING_PROFILE: pre
       apollo_service: http://apollo-meta.test.com
