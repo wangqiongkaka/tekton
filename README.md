@@ -1,3 +1,5 @@
+#安装tekton  
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml  
 #应用  
 java-api-gateway、java-test  
 #代码仓库  
@@ -11,4 +13,5 @@ task.yaml、deploy.yaml、dockerfile为标准化模板，通过taskrun.yaml、gi
 #rancher  
 rancher的流水线配置文件在rancher目录下  
 #参考文档  
-https://github.com/tektoncd/pipeline  
+https://github.com/tektoncd/pipeline 
+https://docs.rancher.cn/rancher2x/  
