@@ -1,5 +1,5 @@
 #应用  
-java-api-gateway  
+java-api-gateway、java-test  
 #代码仓库  
 gitlab.domain  
 #镜像仓库  
