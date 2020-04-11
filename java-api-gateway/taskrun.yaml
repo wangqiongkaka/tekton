@@ -21,7 +21,7 @@ spec:
   - name: pathToContext
     value: /workspace/repo-source/
   - name: pathToYaml
-    value: /workspace/repo-source/deploy/deploy.yml
+    value: /workspace/repo-source/deploy/deploy.yaml
   - name: application
     value: java-api-gateway
   - name: dockerTag
